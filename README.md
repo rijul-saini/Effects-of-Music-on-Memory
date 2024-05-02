@@ -1,6 +1,4 @@
 # Effects of Emotion Inducing Music on Short-Term Memory
-## Lavanya Goel, Rei Masuya, and Rijul Saini
-## December 13, 2023
 
 
 ### Abstract
