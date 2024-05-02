@@ -1,0 +1,161 @@
+---
+title: "Untitled"
+author: "Rijul Saini"
+date: "2023-12-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library("reshape2")
+library("nlme")
+library(sjmisc)
+library(arm)
+library(performance)
+library("geepack")
+library(emmeans)
+```
+
+```{r}
+df <- as_tibble(read.csv("C:/Users/rijul/Desktop/Courses/CS 6350 Empirical Research Methods/Team Works/response_data.csv"))
+df
+
+```
+
+```{r}
+# Load the necessary library for ANOVA
+#library(car)
+
+data <- df[c('Name..First.Last.', 'Correct.Words', 'Words.Written', 'Round')]
+data$Round <- as.factor(data$Round)
+
+
+# Load necessary packages
+# install.packages("lme4")
+library(lme4)
+
+model <- lmer(Correct.Words ~ Round + (1 | Name..First.Last.), data = data)
+
+# Display summary
+summary(model)
+
+emms <- emmeans(model, "Round")
+
+# Perform pairwise comparisons (Tukey's adjustment)
+pairwise_comparisons <- pairs(emms)
+
+# Display post hoc test results
+print(pairwise_comparisons)
+
+# Extract fixed effect coefficients
+fixed_coefs <- fixef(model)
+
+# Calculate standard deviation of fixed effects
+fixed_sd <- sqrt(diag(vcov(model)))
+
+# Calculate Cohen's d
+cohen_d <- fixed_coefs / fixed_sd
+print(cohen_d)
+
+check_model(model)
+
+r_int<- ranef(model)$Name..First.Last.$`(Intercept)`
+qqnorm(r_int)
+qqline(r_int)
+
+# Create a line plot for visualization
+ggplot(data, aes(x = Round, y = Correct.Words, group = Name..First.Last., color = Name..First.Last.)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Memory Performance Across Rounds",
+       x = "Round",
+       y = "Correct Words",
+  		 color = "Participant ID") +
+  theme_minimal()
+```
+
+```{r}
+# Assuming your data is already loaded as 'data'
+
+# Install and load necessary packages
+# install.packages(c("emmeans", "ggplot2"))
+library(emmeans)
+library(ggplot2)
+
+# Convert Round to a factor
+data$Round <- as.factor(data$Round)
+
+# Fit repeated measures ANOVA
+model_anova <- aov(Correct.Words ~ Round + Error(Name..First.Last./Round), data = data)
+summary(model_anova)
+
+# Obtain estimated marginal means (EMMs) for post hoc tests
+emms <- emmeans(model_anova, "Round")
+
+# Perform pairwise comparisons (Tukey's adjustment)
+pairwise_comparisons <- pairs(emms)
+
+# Display post hoc test results
+print(pairwise_comparisons)
+
+# Calculate effect size (partial eta-squared)
+anova_table <- summary(model_anova)
+ss_total <- anova_table$`Sum Sq`[1]  # Total sum of squares
+ss_round <- anova_table$`Sum Sq`[2]  # Round sum of squares (within-subjects)
+partial_eta_squared <- ss_round / ss_total
+
+# Display partial eta-squared
+print(partial_eta_squared)
+
+# Create a line plot for visualization
+ggplot(data, aes(x = Round, y = Correct.Words, group = Name..First.Last., color = Name..First.Last.)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Memory Performance Across Rounds",
+       x = "Round",
+       y = "Correct Words",
+  		 color = "Participant ID") +
+  theme_minimal()
+
+
+```
+
+```{r}
+
+data <- as_tibble(read.csv("C:/Users/rijul/Desktop/Courses/CS 6350 Empirical Research Methods/Team Works/response_data1.csv"))
+data
+data$Round <- as.factor(data$Round)
+data
+
+ggplot(data, aes(x = Round, y = How.well.do.you.think.you.did.on.the.recall.test., group = Name..First.Last., color = Name..First.Last.)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Memory Performance Across Rounds",
+       x = "Round",
+       y = "Correct Words",
+  		 color = "Participant ID") +
+  theme_minimal()
+
+model <- lmer(How.well.do.you.think.you.did.on.the.recall.test. ~ Round + (1 | Name..First.Last.), data = data)
+
+# Display summary
+summary(model)
+
+emms <- emmeans(model, "Round")
+
+# Perform pairwise comparisons (Tukey's adjustment)
+pairwise_comparisons <- pairs(emms)
+
+# Display post hoc test results
+print(pairwise_comparisons)
+```
+
